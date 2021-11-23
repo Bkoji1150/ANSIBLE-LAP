@@ -1,0 +1,36 @@
+---
+- name: Add PostgreSQL Repository 
+  hosts: all
+  become: True
+#  gather_facts: True
+#  vars_files:
+#   - example_key.yaml
+ #       [ item1, item2, item3, item4 ]
+ #
+  tasks:
+  - name: Install Postgres version 11.9 on centos1
+    dnf:
+      name: install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+      state: installed
+  - name: Install postgres module
+    dnf:
+      name: -qy module disable postgresql
+      state: present
+  - name: install Postgres 11 server 
+    dnf: 
+      name: install -y postgresql11-server
+      state: present
+
+  - name: Create a file for postgres
+    file: 
+      path: /pgDATA/Production
+      state: touch 
+      mode: 0700
+      owner: postgres
+      ignore_errors: yes
+
+  - name: Initialize postgres server 
+    command: /usr/pgsql-11/bin/pg_ctl -D /pgDATA/Production initdb
+
+  - name: Start Postgresql server 
+    command: /usr/pgsql-11/bin/pg_ctl -D /pgDATA/Production start
